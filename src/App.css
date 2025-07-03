@@ -1,15 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
-
-.font-playfair {
-  font-family: 'Playfair Display', serif;
-}
-
-.font-inter {
-  font-family: 'Inter', sans-serif;
-}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap');
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Noto Sans JP', sans-serif;
 }
 
 /* Smooth scrolling */
@@ -27,12 +19,12 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d97706;
+  background: #ea580c;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #b45309;
+  background: #c2410c;
 }
 
 /* Animation utilities */
@@ -56,7 +48,7 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
 }
 
 /* Button hover effects */
@@ -67,4 +59,23 @@ select:focus {
 .btn-hover-lift:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Japanese text optimization */
+.text-japanese {
+  font-feature-settings: "palt" 1;
+  letter-spacing: 0.05em;
+}
+
+/* Brand colors */
+.text-brand-orange {
+  color: #ea580c;
+}
+
+.bg-brand-orange {
+  background-color: #ea580c;
+}
+
+.border-brand-orange {
+  border-color: #ea580c;
 }
