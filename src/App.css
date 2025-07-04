@@ -79,3 +79,47 @@ select:focus {
 .border-brand-orange {
   border-color: #ea580c;
 }
+
+/* ドロップダウンメニュー専用CSS */
+.dropdown-menu {
+  z-index: 9999 !important;
+  position: absolute !important;
+  top: 100% !important;
+  right: 0 !important;
+  margin-top: 0.5rem !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+.dropdown-menu.show {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+}
+
+.dropdown-menu.hide {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translateY(-10px) !important;
+}
+
+/* ユーザーメニューボタンのホバー効果 */
+.user-menu-button {
+  transition: all 0.2s ease !important;
+}
+
+.user-menu-button:hover {
+  background-color: #f3f4f6 !important;
+  transform: translateY(-1px) !important;
+}
+
+/* メニューアイテムのホバー効果 */
+.menu-item:hover {
+  background-color: #fff7ed !important;
+  color: #ea580c !important;
+  transform: translateX(2px) !important;
+}

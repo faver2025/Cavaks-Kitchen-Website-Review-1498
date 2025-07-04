@@ -18,12 +18,46 @@ const Login = ({ setUser }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Simulate login
-    setUser({
+    
+    // 簡単ログイン実装
+    const userData = {
       name: 'テストユーザー',
-      email: formData.email
-    });
+      email: formData.email,
+      role: 'user' // user, instructor, admin
+    };
+    
+    // ローカルストレージに保存
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    
+    alert('ログインしました！');
     navigate('/dashboard');
+  };
+
+  // デモ用の簡単ログインボタン
+  const handleDemoLogin = (role, name) => {
+    const userData = {
+      name: name,
+      email: `${role}@cavaks-kitchen.com`,
+      role: role
+    };
+    
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    
+    alert(`${name}としてログインしました！`);
+    
+    // 役割に応じてリダイレクト
+    switch(role) {
+      case 'admin':
+        navigate('/admin');
+        break;
+      case 'instructor':
+        navigate('/instructor');
+        break;
+      default:
+        navigate('/dashboard');
+    }
   };
 
   return (
@@ -50,7 +84,8 @@ const Login = ({ setUser }) => {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              placeholder="your@email.com"
             />
           </div>
 
@@ -64,22 +99,50 @@ const Login = ({ setUser }) => {
               value={formData.password}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              placeholder="パスワードを入力"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold"
+            className="w-full bg-orange-600 text-white py-3 rounded-lg hover:bg-orange-700 transition-colors font-semibold"
           >
             ログイン
           </button>
         </form>
 
+        {/* デモ用簡単ログイン */}
+        <div className="mt-8 pt-6 border-t">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+            🚀 デモ用クイックログイン
+          </h3>
+          <div className="space-y-3">
+            <button
+              onClick={() => handleDemoLogin('user', '購入者ユーザー')}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            >
+              📊 購入者としてログイン
+            </button>
+            <button
+              onClick={() => handleDemoLogin('instructor', '田中シェフ')}
+              className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+            >
+              👨‍🍳 講師としてログイン
+            </button>
+            <button
+              onClick={() => handleDemoLogin('admin', '管理者')}
+              className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+            >
+              🔧 管理者としてログイン
+            </button>
+          </div>
+        </div>
+
         <div className="mt-6 text-center">
           <p className="text-gray-600">
             アカウントをお持ちでない方は{' '}
-            <Link to="/register" className="text-red-600 hover:text-red-700 font-medium">
+            <Link to="/register" className="text-orange-600 hover:text-orange-700 font-medium">
               新規登録
             </Link>
           </p>
