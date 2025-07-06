@@ -18,6 +18,10 @@ html {
   background: #f1f1f1;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #374151;
+}
+
 ::-webkit-scrollbar-thumb {
   background: #ea580c;
   border-radius: 4px;
@@ -25,6 +29,14 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #c2410c;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #f97316;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #ea580c;
 }
 
 /* Animation utilities */
@@ -51,6 +63,12 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
 }
 
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+}
+
 /* Button hover effects */
 .btn-hover-lift {
   transition: all 0.2s ease;
@@ -59,6 +77,10 @@ select:focus {
 .btn-hover-lift:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dark .btn-hover-lift:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 /* Japanese text optimization */
@@ -70,6 +92,10 @@ select:focus {
 /* Brand colors */
 .text-brand-orange {
   color: #ea580c;
+}
+
+.dark .text-brand-orange {
+  color: #f97316;
 }
 
 .bg-brand-orange {
@@ -91,6 +117,12 @@ select:focus {
   border: 1px solid #e5e7eb !important;
   border-radius: 0.5rem !important;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+.dark .dropdown-menu {
+  background: #1f2937 !important;
+  border-color: #374151 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2) !important;
 }
 
 .dropdown-menu.show {
@@ -117,9 +149,54 @@ select:focus {
   transform: translateY(-1px) !important;
 }
 
+.dark .user-menu-button:hover {
+  background-color: #374151 !important;
+}
+
 /* メニューアイテムのホバー効果 */
 .menu-item:hover {
   background-color: #fff7ed !important;
   color: #ea580c !important;
   transform: translateX(2px) !important;
+}
+
+.dark .menu-item:hover {
+  background-color: rgba(249, 115, 22, 0.1) !important;
+  color: #f97316 !important;
+}
+
+/* Dark mode transitions */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Input styles for dark mode */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #f9fafb;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* Card styles for dark mode */
+.dark .card {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+/* Text selection */
+::selection {
+  background-color: #ea580c;
+  color: white;
+}
+
+.dark ::selection {
+  background-color: #f97316;
+  color: white;
 }

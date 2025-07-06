@@ -1,28 +1,50 @@
 import React, { useState } from 'react';
-import { Elements } from '@stripe/react-stripe-js';
-import { stripePromise } from '../config/stripe';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import PaymentForm from '../components/PaymentForm';
+import StripeCheckout from '../components/StripeCheckout';
 import SafeIcon from '../common/SafeIcon';
 import * as FiIcons from 'react-icons/fi';
 
-const { FiArrowLeft, FiCheck } = FiIcons;
+const { FiArrowLeft, FiUser, FiMail, FiMapPin } = FiIcons;
 
 const Checkout = ({ cart, clearCart }) => {
   const navigate = useNavigate();
-  const [isPaymentSuccessful, setIsPaymentSuccessful] = useState(false);
-  const [paymentDetails, setPaymentDetails] = useState(null);
+  const [customerInfo, setCustomerInfo] = useState({
+    name: '',
+    email: '',
+    address: {
+      line1: '',
+      city: '',
+      postal_code: '',
+      country: 'JP'
+    }
+  });
 
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  const handlePaymentSuccess = (details) => {
-    setPaymentDetails(details);
-    setIsPaymentSuccessful(true);
+  const handleCustomerInfoChange = (e) => {
+    const { name, value } = e.target;
+    if (name.startsWith('address.')) {
+      const addressField = name.split('.')[1];
+      setCustomerInfo(prev => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          [addressField]: value
+        }
+      }));
+    } else {
+      setCustomerInfo(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
 
+  const handlePaymentSuccess = (result) => {
     // 注文データを作成
     const orderData = {
-      id: details.paymentIntent.id,
+      id: result.paymentIntent.id,
       orderNumber: `#CV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`,
       orderDate: new Date().toISOString(),
       items: cart.map(item => ({
@@ -36,9 +58,10 @@ const Checkout = ({ cart, clearCart }) => {
       subtotal: total,
       shipping: 0,
       total: total,
-      customer: details.customerInfo,
+      customer: customerInfo,
       paymentMethod: 'クレジットカード',
-      status: '完了'
+      status: '完了',
+      paymentIntent: result.paymentIntent
     };
 
     // 購入履歴をローカルストレージに保存
@@ -49,16 +72,16 @@ const Checkout = ({ cart, clearCart }) => {
     // 管理者用注文データも保存
     const adminOrders = JSON.parse(localStorage.getItem('adminOrders') || '[]');
     const adminOrder = {
-      id: details.paymentIntent.id,
-      customer: details.customerInfo.name,
-      email: details.customerInfo.email,
+      id: result.paymentIntent.id,
+      customer: customerInfo.name,
+      email: customerInfo.email,
       items: orderData.items,
       total: total,
       status: 'pending',
       paymentStatus: 'paid',
       shippingStatus: 'preparing',
       orderDate: new Date().toISOString(),
-      shippingAddress: `${details.customerInfo.address.line1}, ${details.customerInfo.address.city}`
+      shippingAddress: `${customerInfo.address.line1}, ${customerInfo.address.city}`
     };
     adminOrders.push(adminOrder);
     localStorage.setItem('adminOrders', JSON.stringify(adminOrders));
@@ -69,14 +92,13 @@ const Checkout = ({ cart, clearCart }) => {
     // カートをクリア
     clearCart();
 
-    // 3秒後に購入完了ページにリダイレクト
-    setTimeout(() => {
-      navigate('/purchase-complete');
-    }, 3000);
+    // 購入完了ページにリダイレクト
+    navigate('/purchase-complete');
   };
 
   const handlePaymentError = (error) => {
     console.error('Payment error:', error);
+    alert('決済に失敗しました: ' + error.message);
   };
 
   if (cart.length === 0) {
@@ -95,50 +117,9 @@ const Checkout = ({ cart, clearCart }) => {
     );
   }
 
-  if (isPaymentSuccessful) {
-    return (
-      <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full mx-4 text-center"
-        >
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <SafeIcon icon={FiCheck} className="w-8 h-8 text-green-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            決済が完了しました！
-          </h2>
-          <p className="text-gray-600 mb-6">
-            ご注文ありがとうございます。確認メールをお送りしました。
-          </p>
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <div className="text-sm text-gray-600 space-y-1">
-              <div className="flex justify-between">
-                <span>注文番号:</span>
-                <span className="font-mono">{paymentDetails?.paymentIntent.id.slice(-8)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>決済金額:</span>
-                <span className="font-semibold">¥{total.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>決済方法:</span>
-                <span>クレジットカード</span>
-              </div>
-            </div>
-          </div>
-          <p className="text-xs text-gray-500">
-            3秒後に注文完了ページに移動します...
-          </p>
-        </motion.div>
-      </div>
-    );
-  }
-
   return (
     <div className="pt-16 min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -160,57 +141,122 @@ const Checkout = ({ cart, clearCart }) => {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* 注文サマリー */}
+          {/* 顧客情報入力フォーム */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             className="bg-white rounded-xl shadow-lg p-6"
           >
-            <h3 className="text-xl font-semibold text-gray-900 mb-6">注文サマリー</h3>
-            <div className="space-y-4 mb-6">
-              {cart.map((item) => (
-                <div key={`${item.id}-${item.type}`} className="flex items-center space-x-4">
-                  <img
-                    src={item.image}
-                    alt={item.name || item.title}
-                    className="w-16 h-16 rounded-lg object-cover"
-                  />
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">
-                      {item.name || item.title}
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      {item.type === 'course' ? 'オンラインコース' : '商品'}
-                    </p>
-                    <div className="flex justify-between items-center mt-1">
-                      <span className="text-sm text-gray-600">
-                        数量: {item.quantity}
-                      </span>
-                      <span className="font-semibold text-orange-600">
-                        ¥{(item.price * item.quantity).toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <SafeIcon icon={FiUser} className="w-5 h-5 mr-2" />
+              お客様情報
+            </h3>
 
-            <div className="border-t pt-4">
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>小計</span>
-                  <span>¥{total.toLocaleString()}</span>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    お名前 *
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={customerInfo.name}
+                    onChange={handleCustomerInfoChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="山田太郎"
+                  />
                 </div>
-                <div className="flex justify-between">
-                  <span>送料</span>
-                  <span className="text-green-600">無料</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>税込</span>
-                  <span>¥0</span>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    メールアドレス *
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={customerInfo.email}
+                    onChange={handleCustomerInfoChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="example@email.com"
+                  />
                 </div>
               </div>
-              <div className="border-t pt-2 mt-3">
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  住所 *
+                </label>
+                <input
+                  type="text"
+                  name="address.line1"
+                  value={customerInfo.address.line1}
+                  onChange={handleCustomerInfoChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  placeholder="東京都港区青山1-2-3"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    市区町村 *
+                  </label>
+                  <input
+                    type="text"
+                    name="address.city"
+                    value={customerInfo.address.city}
+                    onChange={handleCustomerInfoChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="港区"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    郵便番号 *
+                  </label>
+                  <input
+                    type="text"
+                    name="address.postal_code"
+                    value={customerInfo.address.postal_code}
+                    onChange={handleCustomerInfoChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="107-0061"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 注文サマリー */}
+            <div className="mt-8 bg-gray-50 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-3">注文サマリー</h4>
+              <div className="space-y-2">
+                {cart.map((item) => (
+                  <div key={`${item.id}-${item.type}`} className="flex items-center space-x-3">
+                    <img
+                      src={item.image}
+                      alt={item.name || item.title}
+                      className="w-12 h-12 rounded-lg object-cover"
+                    />
+                    <div className="flex-1">
+                      <h5 className="text-sm font-medium text-gray-900">
+                        {item.name || item.title}
+                      </h5>
+                      <p className="text-xs text-gray-600">
+                        {item.type === 'course' ? 'オンラインコース' : '商品'} × {item.quantity}
+                      </p>
+                    </div>
+                    <span className="text-sm font-semibold text-orange-600">
+                      ¥{(item.price * item.quantity).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t pt-3 mt-3">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">合計</span>
                   <span className="text-2xl font-bold text-orange-600">
@@ -221,19 +267,18 @@ const Checkout = ({ cart, clearCart }) => {
             </div>
           </motion.div>
 
-          {/* 決済フォーム */}
+          {/* Stripe決済フォーム */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <Elements stripe={stripePromise}>
-              <PaymentForm
-                cart={cart}
-                total={total}
-                onPaymentSuccess={handlePaymentSuccess}
-                onPaymentError={handlePaymentError}
-              />
-            </Elements>
+            <StripeCheckout
+              cart={cart}
+              total={total}
+              customerInfo={customerInfo}
+              onSuccess={handlePaymentSuccess}
+              onError={handlePaymentError}
+            />
           </motion.div>
         </div>
       </div>
